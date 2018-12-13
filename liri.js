@@ -17,7 +17,7 @@ const moment = require("moment");
 const userCommand = process.argv[2];
 
 // after the command line index of 2, look up those terms and separate them by a space
-const userSearch = process.argv.slice(3).join(" ");
+let userSearch = process.argv.slice(3).join(" ");
 
 console.log("test test test test " + userSearch);
 
@@ -64,5 +64,44 @@ if (userCommand === "concert-this") {
                     }
                 }
             }
-        })
+        });
+}
+
+// if the user wants to know about movies, they will type the command "movie-this" followed by the title
+else if(userCommand === "movie-this") {
+    // if the user search is blank, the movie title will default to Mr. Nobody
+    if(userSearch === ""){
+        userSearch = "Mr. Nobody";
+    }
+    // once we know the movie title the user wants to gather information for, then we begin our axios call
+    axios
+    // omdb api with default api key "trilogy"
+    .get(`http://www.omdbapi.com/?t=${userSearch}&apikey=trilogy`)
+    .then(function(response){
+        // if the axio is successful, then store the data in a variable
+        let info = response.data;
+        // check if the movie is valid according to response by the omdb api
+        if(info.Response ==="False"){
+            console.log("Please check your spelling or type in a valid movie title and try again!")
+        }
+        // if the movie title is valid, then...
+        else{
+        // gather movie information
+        let title = info.Title;
+        let year = info.Year;
+        let imbdRating = info.imdbRating;
+        let tomatoesRating = info.Ratings[1].Value;
+        let country = info.Country;
+        let language = info.Language;
+        let plot = info.Plot;
+        let actors = info.Actors;
+
+        // and write it to the console in a readble presentation
+        console.log(title + "\nRelease Date: " + year + "\nimdbRating: " + imbdRating + "\nRotten Tomatoes Rating: " +
+        tomatoesRating + "\nProduction Country: " + country + "\nLanguage: " + language + "\nPlot: " + plot
+        + "\nActors: " + actors);
+
+        }
+    });
+
 }
