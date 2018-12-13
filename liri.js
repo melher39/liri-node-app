@@ -10,19 +10,23 @@ const axios = require("axios");
 // grab the moment js package
 const moment = require("moment");
 
+// grab the fs node package to read and write files
+const fs = require("fs");
+
 // testing if the keys are being read
 // console.log(apiKeys);
 
-// command to let program know what content user is looking for
-const userCommand = process.argv[2];
+// command to let program know what type of content user is looking for
+let userCommand = process.argv[2];
 
 // after the command line index of 2, look up those terms and separate them by a space
+// let because it may be reassigned due to certain user inputs
 let userSearch = process.argv.slice(3).join(" ");
 
 console.log("test test test test " + userSearch);
 
 // if the user wants to know of upcoming artists for a band or artist, then look it up using the bands in town API
-if (userCommand === "concert-this") {
+function concert() {
     axios
         .get(`https://rest.bandsintown.com/artists/${userSearch}/events?app_id=codingbootcamp`)
         .then(function (response) {
@@ -65,10 +69,10 @@ if (userCommand === "concert-this") {
                 }
             }
         });
-}
+};
 
 // if the user wants to know about movies, they will type the command "movie-this" followed by the title
-else if(userCommand === "movie-this") {
+function movie() {
     // if the user search is blank, the movie title will default to Mr. Nobody
     if(userSearch === ""){
         userSearch = "Mr. Nobody";
@@ -104,4 +108,50 @@ else if(userCommand === "movie-this") {
         }
     });
 
-}
+};
+
+// if the command is do-what-it-says
+function random() {
+// read from the random.txt file and decode the data to english
+// store the info read inside the variable "data"
+fs.readFile("random.txt", "utf8", function(error, data){
+    // if the code runs into any errors, it will log the error to the console
+    if (error){
+        return console.log(error);
+    }
+
+    // splitting the data into an array for access
+    let dataArr = data.split(",");
+
+    // re-assigning these values with what the random.txt holds
+    userCommand = dataArr[0];
+    userSearch = dataArr[1];
+
+    // checking conditions to see which function to run
+    if (userCommand === "concert-this"){
+        concert();
+    }
+    else if(userCommand === "movie-this"){
+        movie();
+    }
+});
+};
+
+// this will be how the program decides what function above to run
+function runProgram(){
+    // check the conditions and run that function
+    if (userCommand === "concert-this"){
+        concert();
+    }
+    else if(userCommand === "movie-this"){
+        movie();
+    }
+    else if (userCommand === "do-what-it-says"){
+        random();
+    }
+
+};
+
+// call the runProgram() function and start the program
+runProgram();
+
