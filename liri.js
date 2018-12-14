@@ -19,9 +19,6 @@ const moment = require("moment");
 // grab the fs node package to read and write files
 const fs = require("fs");
 
-// testing if the keys are being read
-// console.log(apiKeys);
-
 // command to let program know what type of content user is looking for
 let userCommand = process.argv[2];
 
@@ -29,22 +26,22 @@ let userCommand = process.argv[2];
 // let because it may be reassigned due to certain user inputs
 let userSearch = process.argv.slice(3).join(" ");
 
-// console.log("test test test test " + userSearch);
-
 // if the user wants to look up a song, use the spotify-api to do so...
 function songSearch() {
-    
-    // let typeOfSearch = "track";
 
+    // check first if the user typed in a song name, if they did not, then use the default search term...
     if(userSearch===""){
         userSearch="The Sign";
     }
 
+    // search in the spotify api by track name and limit the results to 10 
     spotify
         .search({ type: "track", query: userSearch, limit: "10" })
         .then(function (response) {
+            // store the results in a variable for easier reference
             let info = response.tracks.items;
 
+            // if the user search term (song) was set to the default, then only display this result
             if(userSearch==="The Sign"){
                 info = response.tracks.items[8];
 
@@ -54,21 +51,30 @@ function songSearch() {
                 let album = info.album.name;
 
                 console.log("Artist name: " + artist + "\nSong Name: " + songName
-                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n");
+                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n" + "\nPlease search for one of your favorite songs!");
             }
+
+            // if the user did type in a song name, then display these results
             else{
 
+                // loop through the results and gather the information we need for each listing
             for (let j=0; j<info.length; j++){
+                // artist(s) name
                 let artist = info[j].artists[0].name;
+                // song name
                 let songName = info[j].name;
+                // link to a preview of the song, some may not have one(usually older songs)
                 let link = info[j].preview_url;
+                // album that this song is from
                 let album = info[j].album.name;
 
+                // display it nicely spaced out on the terminal
                 console.log("Artist name: " + artist + "\nSong Name: " + songName
                 + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n");
             }
         }
         })
+        // if there is an error, then display the error message
         .catch(function (err) {
             console.log(err);
         });
