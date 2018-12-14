@@ -4,6 +4,12 @@ require("dotenv").config();
 // import spotify api keys
 const apiKeys = require("./keys.js");
 
+// grab the spotify api package
+var Spotify = require('node-spotify-api');
+
+// add the spotify apiKeys from our excluded file to the package
+var spotify = new Spotify(apiKeys.spotify);
+
 // Grab the axios package...
 const axios = require("axios");
 
@@ -24,6 +30,30 @@ let userCommand = process.argv[2];
 let userSearch = process.argv.slice(3).join(" ");
 
 console.log("test test test test " + userSearch);
+
+// if the user wants to look up a song, use the spotify-api to do so...
+function songSearch() {
+
+    spotify
+        .search({ type: "track", query: "Soy peor", limit: "1" })
+        .then(function (response) {
+            let info = response.tracks.items;
+
+            for (let j=0; j<info.length; j++){
+                let artist = info[j].artists[0].name;
+                let songName = info[j].name;
+                let link = info[j].preview_url;
+                let album = info[j].album.name;
+
+                console.log("Artist name: " + artist + "\nSong Name: " + songName
+                + "\nPreview Link: " + link + "\nAlbum Name: " + album);
+            }
+            
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+};
 
 // if the user wants to know of upcoming artists for a band or artist, then look it up using the bands in town API
 function concert() {
@@ -74,79 +104,84 @@ function concert() {
 // if the user wants to know about movies, they will type the command "movie-this" followed by the title
 function movie() {
     // if the user search is blank, the movie title will default to Mr. Nobody
-    if(userSearch === ""){
+    if (userSearch === "") {
         userSearch = "Mr. Nobody";
     }
     // once we know the movie title the user wants to gather information for, then we begin our axios call
     axios
-    // omdb api with default api key "trilogy"
-    .get(`http://www.omdbapi.com/?t=${userSearch}&apikey=trilogy`)
-    .then(function(response){
-        // if the axio is successful, then store the data in a variable
-        let info = response.data;
-        // check if the movie is valid according to response by the omdb api
-        if(info.Response ==="False"){
-            console.log("Please check your spelling or type in a valid movie title and try again!")
-        }
-        // if the movie title is valid, then...
-        else{
-        // gather movie information
-        let title = info.Title;
-        let year = info.Year;
-        let imbdRating = info.imdbRating;
-        let tomatoesRating = info.Ratings[1].Value;
-        let country = info.Country;
-        let language = info.Language;
-        let plot = info.Plot;
-        let actors = info.Actors;
+        // omdb api with default api key "trilogy"
+        .get(`http://www.omdbapi.com/?t=${userSearch}&apikey=trilogy`)
+        .then(function (response) {
+            // if the axio is successful, then store the data in a variable
+            let info = response.data;
+            // check if the movie is valid according to response by the omdb api
+            if (info.Response === "False") {
+                console.log("Please check your spelling or type in a valid movie title and try again!")
+            }
+            // if the movie title is valid, then...
+            else {
+                // gather movie information
+                let title = info.Title;
+                let year = info.Year;
+                let imbdRating = info.imdbRating;
+                let tomatoesRating = info.Ratings[1].Value;
+                let country = info.Country;
+                let language = info.Language;
+                let plot = info.Plot;
+                let actors = info.Actors;
 
-        // and write it to the console in a readble presentation
-        console.log(title + "\nRelease Date: " + year + "\nimdbRating: " + imbdRating + "\nRotten Tomatoes Rating: " +
-        tomatoesRating + "\nProduction Country: " + country + "\nLanguage: " + language + "\nPlot: " + plot
-        + "\nActors: " + actors);
+                // and write it to the console in a readble presentation
+                console.log(title + "\nRelease Date: " + year + "\nimdbRating: " + imbdRating + "\nRotten Tomatoes Rating: " +
+                    tomatoesRating + "\nProduction Country: " + country + "\nLanguage: " + language + "\nPlot: " + plot
+                    + "\nActors: " + actors);
 
-        }
-    });
+            }
+        });
 
 };
 
 // if the command is do-what-it-says
 function random() {
-// read from the random.txt file and decode the data to english
-// store the info read inside the variable "data"
-fs.readFile("random.txt", "utf8", function(error, data){
-    // if the code runs into any errors, it will log the error to the console
-    if (error){
-        return console.log(error);
-    }
+    // read from the random.txt file and decode the data to english
+    // store the info read inside the variable "data"
+    fs.readFile("random.txt", "utf8", function (error, data) {
+        // if the code runs into any errors, it will log the error to the console
+        if (error) {
+            return console.log(error);
+        }
 
-    // splitting the data into an array for access
-    let dataArr = data.split(",");
+        // splitting the data into an array for access
+        let dataArr = data.split(",");
 
-    // re-assigning these values with what the random.txt holds
-    userCommand = dataArr[0];
-    userSearch = dataArr[1];
+        // re-assigning these values with what the random.txt holds
+        userCommand = dataArr[0];
+        userSearch = dataArr[1];
 
-    // checking conditions to see which function to run
-    if (userCommand === "concert-this"){
-        concert();
-    }
-    else if(userCommand === "movie-this"){
-        movie();
-    }
-});
+        console.log("user command is: " + userCommand + " user search: " + userSearch);
+
+        // checking conditions to see which function to run
+        if (userCommand == "movie-this") {
+            movie();
+        }
+        else if (userCommand == "concert-this") {
+            concert();
+        }
+    });
 };
 
 // this will be how the program decides what function above to run
-function runProgram(){
+function runProgram() {
     // check the conditions and run that function
-    if (userCommand === "concert-this"){
+    if (userCommand === "concert-this") {
         concert();
     }
-    else if(userCommand === "movie-this"){
+    else if (userCommand === "spotify-this-song") {
+        songSearch();
+    }
+    else if (userCommand === "movie-this") {
         movie();
     }
-    else if (userCommand === "do-what-it-says"){
+    else if (userCommand === "do-what-it-says") {
         random();
     }
 
