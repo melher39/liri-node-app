@@ -26,6 +26,9 @@ let userCommand = process.argv[2];
 // let because it may be reassigned due to certain user inputs
 let userSearch = process.argv.slice(3).join(" ");
 
+// results variable where the info is stored so it can be logged
+let results;
+
 // if the user wants to look up a song, use the spotify-api to do so...
 function songSearch() {
 
@@ -50,8 +53,14 @@ function songSearch() {
                 let link = info.preview_url;
                 let album = info.album.name;
 
-                console.log("Artist name: " + artist + "\nSong Name: " + songName
-                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n" + "\nPlease search for one of your favorite songs!");
+                // save the results in the global variable so it can be logged in the log.txt file
+                results = "Artist name: " + artist + "\nSong Name: " + songName
+                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n";
+
+                // display it nicely spaced out on the terminal
+                console.log(results);
+                
+                log();
             }
 
             // if the user did type in a song name, then display these results
@@ -68,10 +77,17 @@ function songSearch() {
                 // album that this song is from
                 let album = info[j].album.name;
 
+                
+                // save the results in the global variable so it can be logged in the log.txt file
+                results = "Artist name: " + artist + "\nSong Name: " + songName
+
+                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n";
                 // display it nicely spaced out on the terminal
-                console.log("Artist name: " + artist + "\nSong Name: " + songName
-                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n");
+                console.log(results);
+                
+                log();
             }
+            
         }
         })
         // if there is an error, then display the error message
@@ -93,8 +109,12 @@ function concert() {
             if (info.length === 0) {
 
                 // let the user know there are no upcoming events for the selected artist
-                console.log("Sorry, no upcoming events for this artist. Check back later!");
-                console.log("You can also search another artist or band!");
+                // save the results in the global variable so it can be logged in the log.txt file
+                results = "Sorry, no upcoming events for " + userSearch + ". Check back later!" + "\nYou can also search another artist or band!\n";
+            
+                console.log(results);
+
+                log();
             }
 
             // if the info array does have data (meaning there are upcoming events), then...
@@ -113,13 +133,23 @@ function concert() {
 
                     // some venues have a "blank" region, so check first if it's not blank
                     if (region != "") {
+                        
+                        // save the results in the global variable so it can be logged in the log.txt file
+                        results = name + "\n" + city + ", " + region + ", " + country + "\n" + date + "\n";
                         // write to the console log the results in this order 
-                        console.log(name + "\n" + city + ", " + region + ", " + country + "\n" + date + "\n");
+                        console.log(results);
+
+                        log();
                     }
                     // else if the region is blank, then only log these results so there won't be an empty space in between
                     // commmas in the results
                     else {
-                        console.log(name + "\n" + city + ", " + country + "\n" + date + "\n");
+                        // save the results in the global variable so it can be logged in the log.txt file
+                        results = name + "\n" + city + ", " + country + "\n" + date + "\n";
+
+                        console.log(results);
+
+                        log();
                     }
                 }
             }
@@ -141,7 +171,10 @@ function movie() {
             let info = response.data;
             // check if the movie is valid according to response by the omdb api
             if (info.Response === "False") {
-                console.log("Please check your spelling or type in a valid movie title and try again!")
+                // save the results in the global variable so it can be logged in the log.txt file
+                results = "Please check your spelling or type in a valid movie title and try again!";
+                console.log(results);
+                log();
             }
             // if the movie title is valid, then...
             else {
@@ -155,10 +188,15 @@ function movie() {
                 let plot = info.Plot;
                 let actors = info.Actors;
 
+                // save the results in the global variable so it can be logged in the log.txt file
+                results = title + "\nRelease Date: " + year + "\nimdbRating: " + imbdRating + "\nRotten Tomatoes Rating: " +
+                tomatoesRating + "\nProduction Country: " + country + "\nLanguage: " + language + "\nPlot: " + plot
+                + "\nActors: " + actors +"\n";
+
                 // and write it to the console in a readble presentation
-                console.log(title + "\nRelease Date: " + year + "\nimdbRating: " + imbdRating + "\nRotten Tomatoes Rating: " +
-                    tomatoesRating + "\nProduction Country: " + country + "\nLanguage: " + language + "\nPlot: " + plot
-                    + "\nActors: " + actors);
+                console.log(results);
+
+                log();
 
             }
         });
@@ -182,8 +220,6 @@ function random() {
         userCommand = dataArr[0];
         userSearch = dataArr[1];
 
-        console.log("user command is: " + userCommand + " user search: " + userSearch);
-
         // checking conditions to see which function to run
         if (userCommand == "movie-this") {
             movie();
@@ -196,6 +232,17 @@ function random() {
         }
     });
 };
+
+function log(){
+    fs.appendFile("log.txt", results, function(err) {
+
+        // If an error was experienced we will log it.
+        if (err) {
+          console.log(err);
+        }
+      
+      });
+}
 
 // this will be how the program decides what function above to run
 function runProgram() {
@@ -217,4 +264,3 @@ function runProgram() {
 
 // call the runProgram() function and start the program
 runProgram();
-
