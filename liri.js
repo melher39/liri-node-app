@@ -29,15 +29,34 @@ let userCommand = process.argv[2];
 // let because it may be reassigned due to certain user inputs
 let userSearch = process.argv.slice(3).join(" ");
 
-console.log("test test test test " + userSearch);
+// console.log("test test test test " + userSearch);
 
 // if the user wants to look up a song, use the spotify-api to do so...
 function songSearch() {
+    
+    // let typeOfSearch = "track";
+
+    if(userSearch===""){
+        userSearch="The Sign";
+    }
 
     spotify
-        .search({ type: "track", query: "Soy peor", limit: "1" })
+        .search({ type: "track", query: userSearch, limit: "10" })
         .then(function (response) {
             let info = response.tracks.items;
+
+            if(userSearch==="The Sign"){
+                info = response.tracks.items[8];
+
+                let artist = info.artists[0].name;
+                let songName = info.name;
+                let link = info.preview_url;
+                let album = info.album.name;
+
+                console.log("Artist name: " + artist + "\nSong Name: " + songName
+                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n");
+            }
+            else{
 
             for (let j=0; j<info.length; j++){
                 let artist = info[j].artists[0].name;
@@ -46,9 +65,9 @@ function songSearch() {
                 let album = info[j].album.name;
 
                 console.log("Artist name: " + artist + "\nSong Name: " + songName
-                + "\nPreview Link: " + link + "\nAlbum Name: " + album);
+                + "\nPreview Link: " + link + "\nAlbum Name: " + album + "\n");
             }
-            
+        }
         })
         .catch(function (err) {
             console.log(err);
@@ -165,6 +184,9 @@ function random() {
         }
         else if (userCommand == "concert-this") {
             concert();
+        }
+        else if (userCommand === "spotify-this-song") {
+            songSearch();
         }
     });
 };
